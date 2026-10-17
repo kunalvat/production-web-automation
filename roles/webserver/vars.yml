@@ -1,0 +1,6 @@
+---
+nginx_package: nginx
+nginx_service: nginx
+web_root: /usr/share/nginx/html
+web_port: 8080
+app_environment: lab

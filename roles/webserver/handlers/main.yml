@@ -1,0 +1,14 @@
+---
+- name: Validate nginx configuration
+  ansible.builtin.command:
+    argv:
+      - nginx
+      - -t
+  changed_when: false
+  listen: Reload nginx safely
+
+- name: Reload nginx
+  ansible.builtin.service:
+    name: "{{ nginx_service }}"
+    state: reloaded
+  listen: Reload nginx safely

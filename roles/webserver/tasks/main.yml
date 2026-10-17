@@ -1,0 +1,52 @@
+---
+- name: Install Nginx from local RHEL repositories
+  ansible.builtin.dnf:
+    name: "{{ nginx_package }}"
+    state: present
+    disablerepo:
+      - centos-baseos
+      - centos-appstream
+    enablerepo:
+      - local-baseos
+      - local-appstream
+
+- name: Deploy Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/conf.d/production-web.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx safely
+
+- name: Validate complete Nginx configuration
+  ansible.builtin.command:
+    argv:
+      - nginx
+      - -t
+  changed_when: false
+
+- name: Deploy web page
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ web_root }}/index.html"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start Nginx
+  ansible.builtin.service:
+    name: "{{ nginx_service }}"
+    state: started
+    enabled: true
+
+- name: Verify local web health endpoint
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ web_port }}/health"
+    return_content: true
+    status_code: 200
+    use_proxy: false
+  register: web_health
+  retries: 5
+  delay: 2
+  until: web_health.status == 200
