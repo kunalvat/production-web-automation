@@ -1,0 +1,32 @@
+---
+- name: RHEL Read-Only Health Check
+  hosts: all
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Display hostname
+      ansible.builtin.debug:
+        msg: "Hostname: {{ ansible_hostname }}"
+
+    - name: Display operating system
+      ansible.builtin.debug:
+        msg: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Check uptime
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: Display uptime
+      ansible.builtin.debug:
+        var: uptime_result.stdout
+
+    - name: Check root filesystem usage
+      ansible.builtin.command: df -h /
+      register: disk_result
+      changed_when: false
+
+    - name: Display root filesystem usage
+      ansible.builtin.debug:
+        var: disk_result.stdout
